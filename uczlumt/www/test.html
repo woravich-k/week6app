@@ -1,0 +1,23 @@
+
+<!DOCTYPE html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>CEGEG077 Test Page</title>
+	<script>
+	<!-- function getPic(){ -->
+		<!-- document.getElementById('graphdiv').innerHTML = "<img src = 'images/ucl.png'>" -->
+	<!-- } -->
+	function replaceGraphs(){
+		document.getElementById("graphdiv").innnerHTML = "<img src = 'images/ucl.png'>"
+	}
+	
+	</script>
+
+  </head>
+  <body>
+    <div id = "graphdiv"> pic here </div>
+	<button id='getLocation' onclick='replaceGraphs()'>Click Me to Get pic</button>
+	<!-- <script src="js/appActivity.js"></script> -->
+  </body>
+</html>
+
