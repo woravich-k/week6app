@@ -1,0 +1,210 @@
+<html>
+<head>
+	<title>Leaflet and Javascript with GeoJSON Example</title>
+	<!--the following links add the CSS and Javascript required for the Leaflet Map -->
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.1.0/dist/leaflet.css" 
+	integrity ="sha512-
+wcw6ts8Anuw10Mzh9Ytw4pylW8+NAD4ch3lqm9lzAsTxg0GFeJgoAtxuCLREZSC5lUXdVyo/7yfsqFjQ4S+aKw=="
+	crossorigin=""/>
+	
+	<script src="https://unpkg.com/leaflet@1.1.0/dist/leaflet.js"
+	integrity = "sha512-
+mNqn2Wg7tSToJhvHcqfzLMU6J4mkOImSPTxVZAdo+lcPlk+GhZmYgACEe0x35K7YzW1zJ7XyJV/TT1MrdXvMcA=="
+	crossorigin="">
+		
+	</script>
+	
+	
+
+	<!--the following CSS is used to set the size of the Map -->
+	<style type="text/css">
+		#mapid {height: 180 px;}
+		
+		.button {
+			background-color: white;
+			border: none;
+			color: black;
+			padding: 15px 32px;
+			text-align: center;
+			text-decoration: none;
+			display: inline-block;
+			font-size: 100%;
+			width: 49%;
+			height: 10%;
+		}
+			
+			
+		/* for add button*/
+		.buttonBlue {
+			background-color: white; 
+			color: black; 
+			border: 2px solid #008CBA;
+		}
+
+		.buttonBlue:hover {
+			background-color: #008CBA;
+			color: white;
+		}
+		
+		/* for remove button*/
+		.buttonRed {
+			background-color: white; 
+			color: black; 
+			border: 2px solid #f44336;
+		}
+
+		.buttonRed:hover {
+			background-color: #f44336;
+			color: white;
+		}
+
+		
+	</style>
+	
+	<!--the following links incorporate the CSS required for custom icon creation-->
+	<link rel="stylesheet" href ="ionicons.min.css"/>
+	<link rel="stylesheet" href = "leaflet.awesome-markers.css"/>
+	<script src ="leaflet.awesome-markers.js"></script>
+	<script>
+		/*function loadEarthquakeData(){
+			//call the getEarthquakes code
+			//keep the alert message so that we know something is happening
+			alert("Loading Earthquakes");
+			getEarthquakes();
+		}*/
+		
+		//create a variable that will hold the XMLHttpRequest() - this must be done outside a function so that all the functions  can use the sam variable
+		var client;
+		
+		//and a variable that will hold the layer itself - we need to do this outside the function so that we can use it to remove the layer later on
+		var earthquakelayer;
+		var busstoplayer;
+		
+		//use as global variable as they will be used to remove layers and avoid duplicate layers.
+		var loadingEarthquakes
+		var loadingBusstops
+				
+		//create the code to get the Earthquakes data using an XMLHttpRequest
+		function getData(layername){
+			if (layername == "earthquakes" && !loadingEarthquakes){
+				url = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson'
+			}else if (layername == "busstops" && !loadingBusstops){
+				url = 'data/busstops.geojson'
+			}else {
+				alert("The layer is not loaded to the map, since it has already been existed.")
+				return
+			}
+			alert("Loading")
+			client = new XMLHttpRequest();
+			
+			client.open('GET', url);
+			client.onreadystatechange = dataResponse; //note don't use earthquakeResponse() with brackets as that doesn't work
+			client.send();
+		}
+		
+		//create the code to wait for the response from the data server, and process the response once it is received
+		function dataResponse(){
+		//this function listens out for the server to say that the data is ready - i.e. has state 4
+			if (client.readyState == 4){
+			//once the data is ready, process the data
+			var geoJSONData = client.responseText;
+			loadLayer(geoJSONData);
+			}
+		}
+		
+		
+		//convert the received data - which is text - to JSON format and add it to the map
+		function loadLayer(geoJSONData){
+			//decide which layer do we load?
+			//avoid duplicate layers
+			if (geoJSONData.indexOf("earthquake")>0){
+				loadingEarthquakes = true;
+			}else if (geoJSONData.indexOf("IIT_METHOD")>0){
+				loadingBusstops = true;
+			}
+			//convert the text to JSON
+			var json = JSON.parse(geoJSONData);
+			
+			//add the JSON layer onto the map - it will appear using the default icons
+			if (loadingEarthquakes){
+				earthquakelayer = L.geoJson(json).addTo(mymap);
+				//change the map zoom so that all the data is shown
+				mymap.fitBounds(earthquakelayer.getBounds());
+			}
+			if (loadingBusstops) {
+				busstoplayer = L.geoJson(json).addTo(mymap)
+				// zoom to bus stops
+				mymap.fitBounds(busstoplayer.getBounds());
+			}
+			
+			/*,{
+				//use point to layer to create the points
+				pointToLayer: function(feature, latlng){
+					//look at the GeoJSON filr - specifically at the properties - to see the earthquake magnitude and use a different marker depending on this value
+					//also include a pop-up that shows the place value of the earthquakes 
+					if (feature.properties.mag>1.75){
+						return L.marker(latlng,{icon:testMarkerRed}).bindPopup("<b> location: "+feature.properties.place+"</b>");
+					}else{
+					//mag is lower than 1.75
+						return L.marker(latlng,{icon:testMarkerPink}).bindPopup("<b> location: "+feature.properties.place+"</b>");
+					}
+				}
+			}).addTo(mymap);
+			*/
+			
+		}
+		
+		function removeData(layername){
+		//check whether the layer is existed on the map or not if not inform the user.
+			if (layername == "earthquakes") {
+				if (loadingEarthquakes){
+					alert("removing the earthquake data here");
+					mymap.removeLayer(earthquakelayer);
+					loadingEarthquakes = false;
+				} else {
+					alert("There is no earthquake layer on the map");
+				}
+			}
+			if (layername == "busstops") {
+				if (loadingBusstops){
+					alert("removing the busstops data here");
+					mymap.removeLayer(busstoplayer);
+					loadingBusstops = false;
+				} else {
+					alert("There is no bus stop layer on the map");
+				}
+			}
+			
+		}
+	</script>
+	
+	
+</head>
+<body>
+	<!--the mapid div will hold the map-->
+	<div id = "mapid" style="width: 100%;height: 80%;"></div>
+	
+	<!-- the following script will load the map and set the default view and zoom, as well as loading the basemap tiles-->
+	<script>
+		//load the map
+		var mymap = L.map('mapid').setView([51.524559,-0.134040],13);
+		
+		//load the tiles
+		L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',{
+			maxZoom: 18,
+			attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors,'+'<a href="http://creativecommons.org/licenses/by-sa/2.0/"> CC-BY-SA</a>,'+'imagery &copy; <a href="http://mapbox.com">Mapbox</a>', 
+			id: 'mapbox.streets'
+			}).addTo(mymap);
+			
+		
+	</script>
+		
+	<button id ="loadEarthquake" name="loadEarthquake" class ="button buttonBlue" onclick = "getData('earthquakes')">Load Earthquake</button>
+	<button id ="removeEarthquakeData" name="removeEarthquakeData" class ="button buttonRed" onclick="removeData('earthquakes')">Remove Earthquake</button>
+	</br>
+	<button id ="loadBusStops" name="loadBusStops" class ="button buttonBlue" onclick = "getData('busstops')">Load Bus Stops</button>
+	<button id ="removeBusStops" name="removeBusStops" class ="button buttonRed" onclick="removeData('busstops')">Remove Bus Stops</button>
+	
+</br>
+</body>
+</html>
