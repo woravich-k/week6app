@@ -403,9 +403,12 @@ function panToCurrentLoc(){
 //Testing AJAX
 var xhr; //define the globle to process the AJAX request
 function callDivChange(){
+	
 	xhr = new XMLHttpRequest();
 	var url = document.getElementById("url").value;
-
+	if (url == ""){
+		return
+	}
 	xhr.open("GET",url,true);
 	//xhr.open("GET",".test.html",true);
 	xhr.onreadystatechange = processDivChange;
