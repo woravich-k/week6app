@@ -44,6 +44,7 @@ var loadingBusstops;
 //create the code to get the Earthquakes data using an XMLHttpRequest
 function getData(layername){
 	autoPan = false;
+	var url;
 	if (layername == "earthquakes" && !loadingEarthquakes){
 		url = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson'
 	}else if (layername == "busstops" && !loadingBusstops){
@@ -196,9 +197,9 @@ var firstTimeDist = true;
 var prev_closestPt = "";
 var inbound;
 var cutoffDist = 1; // kilometers
-var pts = [ [1,51.524616,-0.13818,"Warren Street"], //id, lat, lon, name
-			[2,51.5567,-0.1380,"Tufnell Park"],
-			[3,51.5592,-0.1342,"Tufnell House"] ];
+var pts = [ [1,51.524616,-0.13818,"Warren Street","https://developer.cege.ucl.ac.uk:31083/WarrenStreet.html"], //id, lat, lon, name,shown URL
+			[2,51.5567,-0.1380,"Tufnell Park","https://developer.cege.ucl.ac.uk:31083/TufnellPark.html"],
+			[3,51.5592,-0.1342,"Tufnell House","https://developer.cege.ucl.ac.uk:31083/TufnellHouse.html"] ];
 
 
 function trackDistance() {
@@ -213,6 +214,7 @@ if (navigator.geolocation) {
 function getAlertFromPoints(position){
 	var closestDist = cutoffDist;
 	var closestPt = "outside";
+	var locURL = "https://developer.cege.ucl.ac.uk:31083/outside.html"
 	var curLat = position.coords.latitude;
 	var curLon = position.coords.longitude;
 	//find the closest point within the cut-off distance
@@ -220,11 +222,13 @@ function getAlertFromPoints(position){
 		if( closestDist > calculateDistance(curLat, curLon, pts[i][1], pts[i][2],'K')){
 			closestDist = calculateDistance(curLat, curLon, pts[i][1], pts[i][2],'K');
 			closestPt = pts[i][3];
+			locURL = pts[i][4];
 		}
 	}
 	if (prev_closestPt != closestPt){
 		alert("Your closest point is: " + closestPt);
-		prev_closestPt = closestPt
+		callDivChange(locURL);
+		prev_closestPt = closestPt;
 	}
 	//find the coordinates of a point using this website:
 	//these are the coordinates for Warren Street
@@ -402,10 +406,13 @@ function panToCurrentLoc(){
 
 //Testing AJAX
 var xhr; //define the globle to process the AJAX request
-function callDivChange(){
+function callDivChange(url){
+	
 	xhr = new XMLHttpRequest();
-	var url = document.getElementById("url").value;
-
+	//var url = document.getElementById("url").value;
+	if (url == ""){
+		return
+	}
 	xhr.open("GET",url,true);
 	//xhr.open("GET",".test.html",true);
 	xhr.onreadystatechange = processDivChange;
