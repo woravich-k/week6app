@@ -92,6 +92,7 @@ html, body {
           align-items: center;
   color: rgba(255, 255, 255, 0.56);
   font-weight: 500;
+  overflow: auto;
 }
 .demo-layout .demo-navigation .mdl-navigation__link:hover {
   background-color: #00BCD4;
@@ -100,7 +101,10 @@ html, body {
 .demo-navigation .mdl-navigation__link .material-icons {
   font-size: 24px;
   color: rgba(255, 255, 255, 0.56);
-  margin-right: 5px;
+  margin-left: 2px;
+  margin-right: 2px;
+  position: relative;
+  
 }
 
 .demo-content {
