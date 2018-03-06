@@ -110,6 +110,7 @@ function loadLayer(geoJSONData){
 		// zoom to bus stops
 		mymap.fitBounds(busstoplayer.getBounds());
 	}else if (lyr == "poi"){
+		loadingPOI = true;
 		poilayer = L.geoJson(json).addTo(mymap);
 		mymap.fitBounds(poilayer.getBounds());
 	}

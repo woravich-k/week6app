@@ -36,20 +36,27 @@ var client;
 //and a variable that will hold the layer itself - we need to do this outside the function so that we can use it to remove the layer later on
 var earthquakelayer;
 var busstoplayer;
+var poilayer;
 
 //use as global variable as they will be used to remove layers and avoid duplicate layers.
 var loadingEarthquakes;
 var loadingBusstops;
+var loadingPOI;
+
+var lyr;
 		
 //create the code to get the Earthquakes data using an XMLHttpRequest
 function getData(layername){
 	autoPan = false;
+	lyr = layername;
 	var url;
-	if (layername == "earthquakes" && !loadingEarthquakes){
+	if (lyr == "earthquakes" && !loadingEarthquakes){
 		url = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson'
-	}else if (layername == "busstops" && !loadingBusstops){
+	}else if (lyr == "busstops" && !loadingBusstops){
 		url = 'data/busstops.geojson'
-	}else {
+	}else if (lyr == "poi" && !loadingPOI){
+		url = 'http://developer.cege.ucl.ac.uk:30283/getpoi'
+	}else{
 		alert("The layer is not loaded to the map, since it has already been existed.")
 		return
 	}
@@ -78,7 +85,7 @@ function loadLayer(geoJSONData){
 	var json = JSON.parse(geoJSONData);
 	//decide which layer do we load?
 	//avoid duplicate layers
-	if (geoJSONData.indexOf("earthquake")>0){
+	if (lyr == "earthquakes"){
 		loadingEarthquakes = true;
 		earthquakelayer = L.geoJson(json,
 		{
@@ -97,11 +104,15 @@ function loadLayer(geoJSONData){
 	
 		//change the map zoom so that all the data is shown
 		mymap.fitBounds(earthquakelayer.getBounds());
-	}else if (geoJSONData.indexOf("IIT_METHOD")>0){
+	}else if (lyr == "busstops"){
 		loadingBusstops = true;
-		busstoplayer = L.geoJson(json).addTo(mymap)
+		busstoplayer = L.geoJson(json).addTo(mymap);
 		// zoom to bus stops
 		mymap.fitBounds(busstoplayer.getBounds());
+	}else if (lyr == "poi"){
+		loadingPOI = true;
+		poilayer = L.geoJson(json).addTo(mymap);
+		mymap.fitBounds(poilayer.getBounds());
 	}
 
 }
@@ -124,6 +135,15 @@ function removeData(layername){
 			loadingBusstops = false;
 		} else {
 			alert("There is no bus stop layer on the map");
+		}
+	}
+	if (layername == "poi") {
+		if (loadingPOI){
+			//alert("removing the busstops data here");
+			mymap.removeLayer(poilayer);
+			loadingPOI = false;
+		} else {
+			alert("There is no poi layer on the map");
 		}
 	}
 	
@@ -310,6 +330,17 @@ function bus()	{
 	}
 }
 
+//POI switch
+var POIbox = document.getElementById("POIbox");	
+function poi()	{
+//add a point
+	if (POIbox.checked){
+		getData('poi');
+	} else {
+		removeData('poi');
+	}
+}
+
 //Current location switch
 var locationBox = document.getElementById("locationBox");	
 function currentLocation()	{
@@ -402,6 +433,10 @@ function panToCurrentLoc(){
 		trackLocation();
 	}
 }
+
+
+
+
 
 
 //Testing AJAX
